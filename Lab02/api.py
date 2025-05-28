@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from cipher.caesar import CaesarCipher
 from cipher.vigenere import VigenereCipher
 from cipher.railfence import RailFenceCipher
@@ -7,8 +7,33 @@ from cipher.transposition import TranspositionCipher
 
 app = Flask(__name__)
 
-caesar_cipher = CaesarCipher()
+@app.route("/")
+def index():
+    return render_template("index.html")
 
+@app.route("/caesar")
+def caesar_page():
+    return render_template("caesar.html")
+
+@app.route("/railfence")
+def railfence_page():
+    return render_template("railfence.html")
+
+@app.route("/vigenere")
+def vigenere_page():
+    return render_template("vigenere.html")
+
+@app.route("/playfair")
+def playfair_page():
+    return render_template("playfair.html")
+
+@app.route("/transposition")
+def transposition_page():
+    return render_template("transposition.html")
+
+
+
+caesar_cipher = CaesarCipher()
 #CAESAR
 @app.route("/api/caesar/encrypt", methods=["POST"])
 def caesar_encrypt():
@@ -72,22 +97,23 @@ def playfair_creatematrix():
     return jsonify({'playfair_matrix': playfair_matrix})
     
 @app.route("/api/playfair/encrypt", methods=["POST"])
-def playfair_encrypt():
+def playfair_encrypt_route():
     data = request.json
     plain_text = data['plain_text']
     key = data['key']
-    playfair_matrix = playfair_cipher.create_playfair_matrix(key)
-    encrypted_text = playfair_cipher.playfair_encrypt(plain_text, playfair_matrix)
-    return jsonify({'encrypted_message': encrypted_text})
+    matrix = playfair_cipher.create_playfair_matrix(key)
+    encrypted_text = playfair_cipher.playfair_encrypt(plain_text, matrix)
+    return jsonify({'encrypted_message': encrypted_text, 'matrix': matrix}) # Thêm 'matrix' vào response
 
 @app.route("/api/playfair/decrypt", methods=["POST"])
-def playfair_decrypt():
+def playfair_decrypt_route():
     data = request.json
     cipher_text = data['cipher_text']
     key = data['key']
-    playfair_matrix = playfair_cipher.create_playfair_matrix(key)
-    decrypted_text = playfair_cipher.playfair_decrypt(cipher_text, playfair_matrix)
-    return jsonify({'decrypted_message': decrypted_text})
+    matrix = playfair_cipher.create_playfair_matrix(key)
+    decrypted_text = playfair_cipher.playfair_decrypt(cipher_text, matrix)
+    return jsonify({'decrypted_message': decrypted_text, 'matrix': matrix}) # Thêm 'matrix' vào response
+
 
 #TRANSPOSTION CIPHER ALGORITHM
 transposition_cipher = TranspositionCipher()
